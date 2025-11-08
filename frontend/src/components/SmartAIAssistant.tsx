@@ -3,9 +3,11 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useLanguage } from '../hooks/useLanguage';
 import { useCropRecommendations, useWeatherData, useFarmingTips, useAIConversations, useSoilAnalysis } from '../hooks/useAgriculturalData';
-import { Mic, MicOff, Volume2, Lightbulb, Sprout, TestTube } from 'lucide-react';
+import { Mic, MicOff, Volume2, Lightbulb, Sprout, TestTube, Settings } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
+import { processMockQuery, MockApiResponse } from '../lib/mockApiSystem';
+import StatusIndicator from './StatusIndicator';
 
 interface SmartAIAssistantProps {
   currentLanguage: string;
@@ -19,6 +21,8 @@ export const SmartAIAssistant: React.FC<SmartAIAssistantProps> = ({ currentLangu
   const [aiResponse, setAiResponse] = useState('');
   const [recognition, setRecognition] = useState<any>(null);
   const [currentLocation, setCurrentLocation] = useState('Karnataka');
+  const [useMockApi, setUseMockApi] = useState(true);
+  const [mockResponse, setMockResponse] = useState<MockApiResponse | null>(null);
 
   const { data: cropRecommendations } = useCropRecommendations(currentLocation, 'kharif');
   const { data: weatherData } = useWeatherData('Bangalore');
@@ -63,7 +67,27 @@ export const SmartAIAssistant: React.FC<SmartAIAssistantProps> = ({ currentLangu
   const processVoiceQuery = async (query: string) => {
     console.log('Processing voice query:', query);
     
-    // Enhanced AI logic with soil analysis integration
+    // Use Mock API System if enabled
+    if (useMockApi) {
+      const mockApiResponse = processMockQuery(query, currentLanguage);
+      setMockResponse(mockApiResponse);
+      
+      const finalResponse = currentLanguage === 'kn' ? mockApiResponse.responseKannada : 
+                           currentLanguage === 'hi' ? mockApiResponse.responseHindi : 
+                           mockApiResponse.response;
+      setAiResponse(finalResponse);
+      
+      // Text-to-speech for mock response
+      if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(finalResponse);
+        utterance.lang = currentLanguage === 'kannada' ? 'kn-IN' : 'en-IN';
+        speechSynthesis.speak(utterance);
+      }
+      
+      return;
+    }
+    
+    // Enhanced AI logic with soil analysis integration (fallback)
     let response = '';
     let responseKannada = '';
 
@@ -158,14 +182,26 @@ export const SmartAIAssistant: React.FC<SmartAIAssistantProps> = ({ currentLangu
   return (
     <Card className="p-6 bg-gradient-to-br from-green-50 to-blue-50 border-green-200">
       <div className="text-center space-y-6">
-        <div className="flex items-center justify-center space-x-2 mb-4">
-          <Sprout className="text-green-600" size={32} />
-          <h2 className="text-2xl font-bold text-green-800">
-            {currentLanguage === 'kannada' ? 'ಕಿಸಾನ್‌ಮಿತ್ರ AI ಸಹಾಯಕ' : currentLanguage === 'hindi' ? 'किसानमित्र AI सहायक' : 'KisaanMitra AI Assistant'}
-          </h2>
-          <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
-            {currentLanguage === 'kannada' ? '7 ಏಜೆಂಟ್‌ಗಳು' : currentLanguage === 'hindi' ? '7 एजेंट' : '7 Agents'}
-          </span>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center space-x-2">
+            <Sprout className="text-green-600" size={32} />
+            <h2 className="text-2xl font-bold text-green-800">
+              {currentLanguage === 'kannada' ? 'ಕಿಸಾನ್‌ಮಿತ್ರ AI ಸಹಾಯಕ' : currentLanguage === 'hindi' ? 'किसानमित्र AI सहायक' : 'KisaanMitra AI Assistant'}
+            </h2>
+            <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
+              {currentLanguage === 'kannada' ? '7 ಏಜೆಂಟ್‌ಗಳು' : currentLanguage === 'hindi' ? '7 एजेंट' : '7 Agents'}
+            </span>
+          </div>
+          
+          <Button
+            onClick={() => setUseMockApi(!useMockApi)}
+            variant="outline"
+            size="sm"
+            className={`${useMockApi ? 'bg-blue-50 border-blue-300 text-blue-700' : 'bg-gray-50'}`}
+          >
+            <Settings className="w-4 h-4 mr-1" />
+            {useMockApi ? 'Mock API' : 'Live API'}
+          </Button>
         </div>
         
         {/* Voice Button */}
@@ -209,7 +245,9 @@ export const SmartAIAssistant: React.FC<SmartAIAssistantProps> = ({ currentLangu
         )}
 
         {/* AI Response */}
-        {aiResponse && (
+        {mockResponse && useMockApi ? (
+          <StatusIndicator response={mockResponse} language={currentLanguage} />
+        ) : aiResponse && (
           <Card className="p-4 bg-green-50 border-green-200">
             <div className="flex items-center justify-between mb-2">
               <span className="text-green-600 font-semibold flex items-center space-x-2">

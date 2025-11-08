@@ -5,17 +5,19 @@ import { DatabaseWeatherWidget } from '../components/DatabaseWeatherWidget';
 import { DatabaseCropRecommendations } from '../components/DatabaseCropRecommendations';
 import { NavigationGrid } from '../components/NavigationGrid';
 import { LanguageSelector } from '../components/LanguageSelector';
+import MockQueryProcessor from '../components/MockQueryProcessor';
 import { useLanguage } from '../hooks/useLanguage';
 import { useFarmingTips } from '../hooks/useAgriculturalData';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Wheat, Droplet, Sun, Lightbulb, TestTube } from 'lucide-react';
+import { Wheat, Droplet, Sun, Lightbulb, TestTube, Cpu } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
   const { currentLanguage, translations } = useLanguage();
   const { data: farmingTips } = useFarmingTips();
   const navigate = useNavigate();
+  const [showMockDemo, setShowMockDemo] = useState(false);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-blue-50">
@@ -44,6 +46,44 @@ const Index = () => {
       <div className="container mx-auto p-4 space-y-6">
         {/* Smart AI Assistant - Central Feature */}
         <SmartAIAssistant currentLanguage={currentLanguage} />
+
+        {/* Mock API Demo Section */}
+        <Card className="p-6 bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="p-3 bg-purple-100 rounded-lg">
+                <Cpu className="text-purple-600" size={32} />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-gray-800">
+                  {currentLanguage === 'kannada' ? 'ಮಾಕ್ API ಡೆಮೊ ಸಿಸ್ಟಮ್' : currentLanguage === 'hindi' ? 'मॉक API डेमो सिस्टम' : 'Mock API Demo System'}
+                </h2>
+                <p className="text-gray-600">
+                  {currentLanguage === 'kannada'
+                    ? 'ಬಣ್ಣ-ಕೋಡೆಡ್ ಸ್ಥಿತಿ ಸೂಚಕಗಳೊಂದಿಗೆ ಕೃಷಿ ಪ್ರಶ್ನೆಗಳನ್ನು ಪರೀಕ್ಷಿಸಿ'
+                    : currentLanguage === 'hindi'
+                    ? 'रंग-कोडेड स्थिति संकेतकों के साथ कृषि प्रश्नों का परीक्षण करें'
+                    : 'Test agricultural queries with color-coded status indicators (Red/Green/Orange)'
+                  }
+                </p>
+              </div>
+            </div>
+            <Button
+              onClick={() => setShowMockDemo(!showMockDemo)}
+              className="bg-purple-600 hover:bg-purple-700 text-white"
+            >
+              {showMockDemo 
+                ? (currentLanguage === 'kannada' ? 'ಮರೆಮಾಡಿ' : currentLanguage === 'hindi' ? 'छुपाएं' : 'Hide Demo')
+                : (currentLanguage === 'kannada' ? 'ಡೆಮೊ ತೋರಿಸಿ' : currentLanguage === 'hindi' ? 'डेमो दिखाएं' : 'Show Demo')
+              }
+            </Button>
+          </div>
+        </Card>
+
+        {/* Mock Query Processor Demo */}
+        {showMockDemo && (
+          <MockQueryProcessor language={currentLanguage} />
+        )}
 
         {/* Soil Analysis CTA */}
         <Card className="p-6 bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200">
