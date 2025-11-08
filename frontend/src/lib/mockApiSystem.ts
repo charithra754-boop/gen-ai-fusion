@@ -279,13 +279,182 @@ export function generateMockResponse(query: string, language: string = 'en'): Mo
 }
 
 /**
- * Processes a query and returns a mock API response with color-coded status
+ * Error types for query processing
+ */
+export interface QueryError {
+  type: 'network' | 'validation' | 'timeout' | 'system' | 'unknown';
+  message: string;
+  code?: string;
+  retryable: boolean;
+}
+
+/**
+ * Validates query input and returns validation errors if any
+ */
+export function validateQuery(query: string): QueryError | null {
+  if (!query || typeof query !== 'string') {
+    return {
+      type: 'validation',
+      message: 'Query cannot be empty',
+      retryable: false
+    };
+  }
+
+  const trimmedQuery = query.trim();
+  
+  if (trimmedQuery.length === 0) {
+    return {
+      type: 'validation',
+      message: 'Query cannot be empty',
+      retryable: false
+    };
+  }
+
+  if (trimmedQuery.length > 500) {
+    return {
+      type: 'validation',
+      message: 'Query is too long. Please limit to 500 characters.',
+      retryable: false
+    };
+  }
+
+  // Check for potentially harmful content
+  const suspiciousPatterns = [
+    /<script/i,
+    /javascript:/i,
+    /on\w+\s*=/i,
+    /eval\s*\(/i
+  ];
+
+  if (suspiciousPatterns.some(pattern => pattern.test(trimmedQuery))) {
+    return {
+      type: 'validation',
+      message: 'Query contains invalid characters',
+      retryable: false
+    };
+  }
+
+  return null;
+}
+
+/**
+ * Creates a fallback response for unrecognized or problematic queries
+ */
+export function createFallbackResponse(query: string, error?: QueryError, language: string = 'en'): MockApiResponse {
+  const fallbackMessages = {
+    en: {
+      unrecognized: "I didn't quite understand your question. Could you please rephrase it? You can ask about crops, loans (KCC), market prices, or security concerns.",
+      validation: "Please check your question and try again. Make sure it's related to agriculture, finance, or farming.",
+      network: "Connection issue detected. Please check your internet connection and try again.",
+      timeout: "Request timed out. Please try again with a shorter question.",
+      system: "System temporarily unavailable. Please try again in a few moments.",
+      general: "Unable to process your request right now. Please try again or contact support."
+    },
+    kn: {
+      unrecognized: "ನಿಮ್ಮ ಪ್ರಶ್ನೆ ನನಗೆ ಸರಿಯಾಗಿ ಅರ್ಥವಾಗಲಿಲ್ಲ. ದಯವಿಟ್ಟು ಅದನ್ನು ಮತ್ತೆ ಹೇಳಿ? ನೀವು ಬೆಳೆಗಳು, ಸಾಲಗಳು (KCC), ಮಾರುಕಟ್ಟೆ ಬೆಲೆಗಳು ಅಥವಾ ಭದ್ರತೆಯ ಬಗ್ಗೆ ಕೇಳಬಹುದು.",
+      validation: "ದಯವಿಟ್ಟು ನಿಮ್ಮ ಪ್ರಶ್ನೆಯನ್ನು ಪರಿಶೀಲಿಸಿ ಮತ್ತು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ. ಇದು ಕೃಷಿ, ಹಣಕಾಸು ಅಥವಾ ಕೃಷಿಗೆ ಸಂಬಂಧಿಸಿದೆ ಎಂದು ಖಚಿತಪಡಿಸಿಕೊಳ್ಳಿ.",
+      network: "ಸಂಪರ್ಕ ಸಮಸ್ಯೆ ಪತ್ತೆಯಾಗಿದೆ. ದಯವಿಟ್ಟು ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಸಂಪರ್ಕವನ್ನು ಪರಿಶೀಲಿಸಿ ಮತ್ತು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
+      timeout: "ವಿನಂತಿ ಸಮಯ ಮೀರಿದೆ. ದಯವಿಟ್ಟು ಚಿಕ್ಕ ಪ್ರಶ್ನೆಯೊಂದಿಗೆ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
+      system: "ಸಿಸ್ಟಮ್ ತಾತ್ಕಾಲಿಕವಾಗಿ ಲಭ್ಯವಿಲ್ಲ. ದಯವಿಟ್ಟು ಸ್ವಲ್ಪ ಸಮಯದ ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
+      general: "ಇದೀಗ ನಿಮ್ಮ ವಿನಂತಿಯನ್ನು ಪ್ರಕ್ರಿಯೆಗೊಳಿಸಲು ಸಾಧ್ಯವಾಗುವುದಿಲ್ಲ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ ಅಥವಾ ಬೆಂಬಲವನ್ನು ಸಂಪರ್ಕಿಸಿ."
+    },
+    hi: {
+      unrecognized: "मुझे आपका प्रश्न ठीक से समझ नहीं आया। कृपया इसे दोबारा कहें? आप फसलों, ऋण (KCC), बाजार की कीमतों या सुरक्षा के बारे में पूछ सकते हैं।",
+      validation: "कृपया अपने प्रश्न की जांच करें और पुनः प्रयास करें। सुनिश्चित करें कि यह कृषि, वित्त या खेती से संबंधित है।",
+      network: "कनेक्शन समस्या का पता चला। कृपया अपना इंटरनेट कनेक्शन जांचें और पुनः प्रयास करें।",
+      timeout: "अनुरोध का समय समाप्त हो गया। कृपया छोटे प्रश्न के साथ पुनः प्रयास करें।",
+      system: "सिस्टम अस्थायी रूप से अनुपलब्ध है। कृपया कुछ क्षणों में पुनः प्रयास करें।",
+      general: "अभी आपके अनुरोध को संसाधित करने में असमर्थ। कृपया पुनः प्रयास करें या सहायता से संपर्क करें।"
+    }
+  };
+
+  const messages = fallbackMessages[language as keyof typeof fallbackMessages] || fallbackMessages.en;
+  let message = messages.general;
+  
+  if (error) {
+    switch (error.type) {
+      case 'validation':
+        message = messages.validation;
+        break;
+      case 'network':
+        message = messages.network;
+        break;
+      case 'timeout':
+        message = messages.timeout;
+        break;
+      case 'system':
+        message = messages.system;
+        break;
+      default:
+        message = messages.general;
+    }
+  } else {
+    message = messages.unrecognized;
+  }
+
+  return {
+    id: `fallback_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    category: 'GENERAL',
+    status: 'error',
+    statusColor: 'red',
+    confidence: 0,
+    response: message,
+    responseKannada: fallbackMessages.kn[error?.type || 'unrecognized'] || fallbackMessages.kn.general,
+    responseHindi: fallbackMessages.hi[error?.type || 'unrecognized'] || fallbackMessages.hi.general,
+    icon: '❌',
+    timestamp: new Date().toISOString(),
+    metadata: {
+      agentType: 'Error Handler',
+      actionRequired: true,
+      urgency: 'medium',
+      errorType: error?.type || 'unrecognized',
+      retryable: error?.retryable ?? true
+    }
+  };
+}
+
+/**
+ * Processes a query and returns a mock API response with comprehensive error handling
  */
 export function processMockQuery(query: string, language: string = 'en'): MockApiResponse {
-  // Simulate API processing delay
-  const response = generateMockResponse(query, language);
-  
-  console.log(`Mock API: Processed query "${query}" -> Category: ${response.category}, Status: ${response.statusColor}`);
-  
-  return response;
+  try {
+    // Validate input
+    const validationError = validateQuery(query);
+    if (validationError) {
+      console.warn(`Query validation failed: ${validationError.message}`);
+      return createFallbackResponse(query, validationError, language);
+    }
+
+    // Simulate potential system errors (5% chance)
+    if (Math.random() < 0.05) {
+      const systemError: QueryError = {
+        type: 'system',
+        message: 'Simulated system error',
+        retryable: true
+      };
+      console.warn('Simulated system error occurred');
+      return createFallbackResponse(query, systemError, language);
+    }
+
+    // Process the query normally
+    const response = generateMockResponse(query, language);
+    
+    // Check if the query was properly categorized
+    if (response.category === 'GENERAL' && response.confidence < 50) {
+      console.log(`Low confidence response for query: "${query}"`);
+      return createFallbackResponse(query, undefined, language);
+    }
+    
+    console.log(`Mock API: Processed query "${query}" -> Category: ${response.category}, Status: ${response.statusColor}`);
+    
+    return response;
+  } catch (error) {
+    console.error('Unexpected error in processMockQuery:', error);
+    const systemError: QueryError = {
+      type: 'unknown',
+      message: 'Unexpected system error',
+      retryable: true
+    };
+    return createFallbackResponse(query, systemError, language);
+  }
 }

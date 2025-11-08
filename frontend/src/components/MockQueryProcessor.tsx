@@ -47,13 +47,60 @@ export const MockQueryProcessor: React.FC<MockQueryProcessorProps> = ({ language
     
     setIsProcessing(true);
     
-    // Simulate API processing delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const response = processMockQuery(inputQuery, language);
-    setResponses(prev => [response, ...prev]);
-    setQuery('');
-    setIsProcessing(false);
+    try {
+      // Simulate API processing delay with timeout
+      const processingPromise = new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request timeout')), 10000)
+      );
+      
+      await Promise.race([processingPromise, timeoutPromise]);
+      
+      const response = processMockQuery(inputQuery, language);
+      
+      // Add retry functionality for failed requests
+      if (response.status === 'error' && response.metadata?.retryable) {
+        response.metadata.retryAction = () => processQuery(inputQuery);
+      }
+      
+      setResponses(prev => [response, ...prev]);
+      setQuery('');
+    } catch (error) {
+      console.error('Query processing error:', error);
+      
+      // Create error response
+      const errorResponse: MockApiResponse = {
+        id: `error_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        category: 'GENERAL',
+        status: 'error',
+        statusColor: 'red',
+        confidence: 0,
+        response: error.message === 'Request timeout' 
+          ? '⏱️ Request timed out. Please try again with a shorter question.'
+          : '🚨 System error occurred. Please try again or contact support.',
+        responseKannada: error.message === 'Request timeout'
+          ? '⏱️ ವಿನಂತಿ ಸಮಯ ಮೀರಿದೆ. ದಯವಿಟ್ಟು ಚಿಕ್ಕ ಪ್ರಶ್ನೆಯೊಂದಿಗೆ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.'
+          : '🚨 ಸಿಸ್ಟಮ್ ದೋಷ ಸಂಭವಿಸಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ ಅಥವಾ ಬೆಂಬಲವನ್ನು ಸಂಪರ್ಕಿಸಿ.',
+        responseHindi: error.message === 'Request timeout'
+          ? '⏱️ अनुरोध का समय समाप्त हो गया। कृपया छोटे प्रश्न के साथ पुनः प्रयास करें।'
+          : '🚨 सिस्टम त्रुटि हुई। कृपया पुनः प्रयास करें या सहायता से संपर्क करें।',
+        icon: error.message === 'Request timeout' ? '⏱️' : '🚨',
+        timestamp: new Date().toISOString(),
+        metadata: {
+          agentType: 'Error Handler',
+          actionRequired: true,
+          urgency: error.message === 'Request timeout' ? 'medium' : 'high',
+          errorType: error.message === 'Request timeout' ? 'timeout' : 'system',
+          retryable: true,
+          retryAction: () => processQuery(inputQuery)
+        }
+      };
+      
+      setResponses(prev => [errorResponse, ...prev]);
+      setQuery('');
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -214,6 +261,7 @@ export const MockQueryProcessor: React.FC<MockQueryProcessorProps> = ({ language
                 key={response.id}
                 response={response}
                 language={language}
+                isProcessing={isProcessing}
               />
             ))}
           </div>

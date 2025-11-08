@@ -1,15 +1,17 @@
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { AlertTriangle, CheckCircle, XCircle, Shield, TrendingUp, Sprout, CreditCard, HelpCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { AlertTriangle, CheckCircle, XCircle, Shield, TrendingUp, Sprout, CreditCard, HelpCircle, RefreshCw } from 'lucide-react';
 import { MockApiResponse } from '../lib/mockApiSystem';
 
 interface StatusIndicatorProps {
   response: MockApiResponse;
   language?: string;
+  isProcessing?: boolean;
 }
 
-export const StatusIndicator: React.FC<StatusIndicatorProps> = ({ response, language = 'en' }) => {
+export const StatusIndicator: React.FC<StatusIndicatorProps> = ({ response, language = 'en', isProcessing = false }) => {
   const getStatusIcon = () => {
     switch (response.status) {
       case 'success':
@@ -147,15 +149,63 @@ export const StatusIndicator: React.FC<StatusIndicatorProps> = ({ response, lang
           </div>
         </div>
 
+        {/* Error Actions */}
+        {response.status === 'error' && response.metadata?.retryable && (
+          <div className="mt-3 pt-3 border-t border-gray-200">
+            <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
+              <Button
+                onClick={() => response.metadata?.retryAction?.()}
+                variant="outline"
+                size="sm"
+                className="bg-blue-50 text-blue-700 border-blue-300 hover:bg-blue-100"
+                disabled={isProcessing}
+              >
+                <RefreshCw className={`w-4 h-4 mr-2 ${isProcessing ? 'animate-spin' : ''}`} />
+                {language === 'kn' ? 'ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ' : language === 'hi' ? 'पुनः प्रयास करें' : 'Try Again'}
+              </Button>
+              
+              {response.metadata?.errorType === 'timeout' && (
+                <span className="text-xs text-gray-600">
+                  💡 {language === 'kn' ? 'ಸಲಹೆ: ಚಿಕ್ಕ, ಹೆಚ್ಚು ನಿರ್ದಿಷ್ಟ ಪ್ರಶ್ನೆಯನ್ನು ಪ್ರಯತ್ನಿಸಿ' : 
+                        language === 'hi' ? 'सुझाव: छोटा, अधिक विशिष्ट प्रश्न आज़माएं' : 
+                        'Tip: Try a shorter, more specific question'}
+                </span>
+              )}
+              
+              {response.metadata?.errorType === 'validation' && (
+                <span className="text-xs text-gray-600">
+                  💡 {language === 'kn' ? 'ಸಲಹೆ: ಬೆಳೆಗಳು, ಸಾಲಗಳು, ಮಾರುಕಟ್ಟೆ ಬೆಲೆಗಳು ಅಥವಾ ಭದ್ರತೆಯ ಬಗ್ಗೆ ಕೇಳಿ' : 
+                        language === 'hi' ? 'सुझाव: फसलों, ऋण, बाजार की कीमतों या सुरक्षा के बारे में पूछें' : 
+                        'Tip: Ask about crops, loans, market prices, or security'}
+                </span>
+              )}
+              
+              {response.metadata?.errorType === 'system' && (
+                <span className="text-xs text-gray-600">
+                  💡 {language === 'kn' ? 'ತುರ್ತು ಸಹಾಯವಾಣಿ: 1551 (ಕೃಷಿ ಬೆಂಬಲ)' : 
+                        language === 'hi' ? 'आपातकालीन हेल्पलाइन: 1551 (कृषि सहायता)' : 
+                        'Emergency helpline: 1551 (Agricultural support)'}
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Metadata */}
-        <div className="flex items-center justify-between text-xs text-gray-500 pt-2 border-t border-gray-200">
-          <div className="flex items-center space-x-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between text-xs text-gray-500 pt-2 border-t border-gray-200 space-y-1 sm:space-y-0">
+          <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-4">
             <span>
               {language === 'kn' ? 'ಏಜೆಂಟ್:' : language === 'hi' ? 'एजेंट:' : 'Agent:'} {response.metadata?.agentType}
             </span>
             <span>
               {language === 'kn' ? 'ವಿಶ್ವಾಸ:' : language === 'hi' ? 'विश्वास:' : 'Confidence:'} {response.confidence}%
             </span>
+            <span>{new Date(response.timestamp).toLocaleString()}</span>
+            {response.metadata?.errorType && (
+              <span className="text-red-600">
+                {language === 'kn' ? 'ದೋಷ:' : language === 'hi' ? 'त्रुटि:' : 'Error:'} {response.metadata.errorType}
+              </span>
+            )}
           </div>
           
           {response.metadata?.actionRequired && (
