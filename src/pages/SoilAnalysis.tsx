@@ -22,13 +22,18 @@ const SoilAnalysis = () => {
             className="flex items-center space-x-2"
           >
             <ArrowLeft size={20} />
-            <span>{currentLanguage === 'kannada' ? 'ಮನೆಗೆ' : 'Home'}</span>
+            <span>{currentLanguage === 'kannada' ? 'ಮನೆಗೆ' : currentLanguage === 'hindi' ? 'घर' : 'Home'}</span>
           </Button>
           <div className="flex items-center space-x-2">
-            <TestTube className="text-green-600" size={32} />
-            <h1 className="text-2xl font-bold text-green-800">
-              {currentLanguage === 'kannada' ? 'ಮಣ್ಣಿನ ಪರೀಕ್ಷೆ' : 'Soil Analysis'}
-            </h1>
+            <TestTube className="text-amber-600" size={32} />
+            <div>
+              <h1 className="text-2xl font-bold text-green-800">
+                {currentLanguage === 'kannada' ? 'ಮಣ್ಣಿನ ಪರೀಕ್ಷೆ ಮತ್ತು ಬೆಳೆ ಯೋಜನೆ' : currentLanguage === 'hindi' ? 'मिट्टी परीक्षण और फसल योजना' : 'Soil Analysis & Crop Portfolio'}
+              </h1>
+              <p className="text-xs text-gray-600">
+                {currentLanguage === 'kannada' ? 'GAA - ಜಿಯೋ-ಅಗ್ರೋನಮಿ ಏಜೆಂಟ್' : currentLanguage === 'hindi' ? 'GAA - भू-कृषि एजेंट' : 'GAA - Geo-Agronomy Agent'}
+              </p>
+            </div>
           </div>
         </div>
         <LanguageSelector />

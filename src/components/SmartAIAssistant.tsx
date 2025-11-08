@@ -70,29 +70,32 @@ export const SmartAIAssistant: React.FC<SmartAIAssistantProps> = ({ currentLangu
     const queryLower = query.toLowerCase();
     
     if (queryLower.includes('soil') || queryLower.includes('ಮಣ್ಣು') || queryLower.includes('test') || queryLower.includes('ಪರೀಕ್ಷೆ')) {
-      response = `I can help you analyze your soil and recommend the best crops! You can use our AI-powered soil analysis feature. Just provide your soil's NPK values, pH, temperature, humidity, and rainfall data.`;
-      responseKannada = `ನಿಮ್ಮ ಮಣ್ಣಿನ ಪರೀಕ್ಷೆ ಮಾಡಿ ಉತ್ತಮ ಬೆಳೆಗಳನ್ನು ಶಿಫಾರಸು ಮಾಡಲು ನಾನು ಸಹಾಯ ಮಾಡಬಲ್ಲೆ! NPK ಮೌಲ್ಯಗಳು, pH, ತಾಪಮಾನ, ಆರ್ದ್ರತೆ ಮತ್ತು ಮಳೆಯ ಮಾಹಿತಿ ಕೊಡಿ.`;
-    } else if (queryLower.includes('crop') || queryLower.includes('ಬೆಳೆ') || queryLower.includes('plant')) {
+      response = `KisaanMitra's Geo-Agronomy Agent (GAA) can analyze your soil and recommend optimal crop portfolios for collective farming! Provide your soil's NPK values, pH, temperature, humidity, and rainfall data for AI-powered recommendations.`;
+      responseKannada = `ಕಿಸಾನ್‌ಮಿತ್ರದ ಜಿಯೋ-ಅಗ್ರೋನಮಿ ಏಜೆಂಟ್ (GAA) ನಿಮ್ಮ ಮಣ್ಣನ್ನು ವಿಶ್ಲೇಷಿಸಿ ಸಾಮೂಹಿಕ ಕೃಷಿಗಾಗಿ ಅತ್ಯುತ್ತಮ ಬೆಳೆ ಪೋರ್ಟ್‌ಫೋಲಿಯೊಗಳನ್ನು ಶಿಫಾರಸು ಮಾಡಬಹುದು!`;
+    } else if (queryLower.includes('crop') || queryLower.includes('ಬೆಳೆ') || queryLower.includes('plant') || queryLower.includes('portfolio')) {
       const bestCrop = cropRecommendations?.[0];
       if (bestCrop) {
-        response = `I recommend growing ${bestCrop.crop_name} this season. It has a profitability score of ${bestCrop.profitability_score}% and takes ${bestCrop.growing_duration} days to grow. For personalized recommendations, try our soil analysis feature!`;
-        responseKannada = `ಈ ಕಾಲದಲ್ಲಿ ${bestCrop.crop_name === 'Rice' ? 'ಅಕ್ಕಿ' : bestCrop.crop_name === 'Wheat' ? 'ಗೋಧಿ' : bestCrop.crop_name} ಬೆಳೆಸಲು ಸಲಹೆ ನೀಡುತ್ತೇನೆ. ವೈಯಕ್ತಿಕ ಶಿಫಾರಸುಗಳಿಗಾಗಿ ಮಣ್ಣಿನ ಪರೀಕ್ಷೆ ಮಾಡಿ!`;
+        response = `Based on market intelligence, I recommend ${bestCrop.crop_name} for your FPO collective. Profitability score: ${bestCrop.profitability_score}%, growing duration: ${bestCrop.growing_duration} days. Our CMGA agent optimizes crop portfolios for maximum collective profit!`;
+        responseKannada = `ಮಾರುಕಟ್ಟೆ ಬುದ್ಧಿವಂತಿಕೆಯ ಆಧಾರದ ಮೇಲೆ, ನಿಮ್ಮ FPO ಸಾಮೂಹಿಕಕ್ಕಾಗಿ ${bestCrop.crop_name === 'Rice' ? 'ಅಕ್ಕಿ' : bestCrop.crop_name === 'Wheat' ? 'ಗೋಧಿ' : bestCrop.crop_name} ಶಿಫಾರಸು ಮಾಡುತ್ತೇನೆ!`;
       }
-    } else if (queryLower.includes('weather') || queryLower.includes('ಹವಾಮಾನ') || queryLower.includes('rain')) {
+    } else if (queryLower.includes('weather') || queryLower.includes('ಹವಾಮಾನ') || queryLower.includes('rain') || queryLower.includes('climate')) {
       const todayWeather = weatherData?.[0];
       if (todayWeather) {
-        response = `Today's weather: ${todayWeather.temperature}°C, ${todayWeather.humidity}% humidity, ${todayWeather.rainfall}mm rainfall. Condition: ${todayWeather.weather_condition}.`;
-        responseKannada = `ಇಂದಿನ ಹವಾಮಾನ: ${todayWeather.temperature}°C ತಾಪಮಾನ, ${todayWeather.humidity}% ಆರ್ದ್ರತೆ, ${todayWeather.rainfall}mm ಮಳೆ.`;
+        response = `Climate & Resource Agent (CRA) reports: ${todayWeather.temperature}°C, ${todayWeather.humidity}% humidity, ${todayWeather.rainfall}mm rainfall. Condition: ${todayWeather.weather_condition}. Our IoT sensors monitor field conditions 24/7 for optimal irrigation!`;
+        responseKannada = `CRA ಏಜೆಂಟ್ ವರದಿ: ${todayWeather.temperature}°C, ${todayWeather.humidity}% ಆರ್ದ್ರತೆ, ${todayWeather.rainfall}mm ಮಳೆ.`;
       }
     } else if (queryLower.includes('tip') || queryLower.includes('advice') || queryLower.includes('ಸಲಹೆ')) {
       const randomTip = farmingTips?.[Math.floor(Math.random() * (farmingTips?.length || 1))];
       if (randomTip) {
-        response = `Here's a farming tip: ${randomTip.tip_title}. ${randomTip.tip_content}`;
-        responseKannada = `ಕೃಷಿ ಸಲಹೆ: ${randomTip.tip_title_kannada}. ${randomTip.tip_content_kannada}`;
+        response = `Expert farming tip from KisaanMitra: ${randomTip.tip_title}. ${randomTip.tip_content}`;
+        responseKannada = `ಕಿಸಾನ್‌ಮಿತ್ರದಿಂದ ತಜ್ಞರ ಸಲಹೆ: ${randomTip.tip_title_kannada}. ${randomTip.tip_content_kannada}`;
       }
+    } else if (queryLower.includes('fpo') || queryLower.includes('collective') || queryLower.includes('market')) {
+      response = "KisaanMitra helps you join Farmer Producer Organizations (FPOs) for collective market governance! Our Market Intelligence Agent (MIA) provides real-time mandi prices and demand forecasting. Join an FPO to increase bargaining power and profits!";
+      responseKannada = "ಕಿಸಾನ್‌ಮಿತ್ರ FPO ಗಳಿಗೆ ಸೇರಲು ಸಹಾಯ ಮಾಡುತ್ತದೆ! ನಮ್ಮ MIA ಏಜೆಂಟ್ ನೇರ ಮಂಡಿ ಬೆಲೆಗಳನ್ನು ಒದಗಿಸುತ್ತದೆ!";
     } else {
-      response = "I understand you're asking about farming. I can help with crops, weather, farming tips, or soil analysis. Try asking 'test my soil' for personalized recommendations!";
-      responseKannada = "ನೀವು ಕೃಷಿಯ ಬಗ್ಗೆ ಕೇಳುತ್ತಿದ್ದೀರಿ. ಬೆಳೆಗಳು, ಹವಾಮಾನ, ಕೃಷಿ ಸಲಹೆಗಳು ಅಥವಾ ಮಣ್ಣಿನ ಪರೀಕ್ಷೆಯ ಬಗ್ಗೆ ಕೇಳಿ!";
+      response = "KisaanMitra's 7 AI agents are here to help! Ask about: crop portfolios (CMGA), market prices (MIA), soil analysis (GAA), weather (CRA), loans (FIA), cold storage (LIA), or FPO collectives. Transforming farmers into shareholders!";
+      responseKannada = "ಕಿಸಾನ್‌ಮಿತ್ರದ 7 AI ಏಜೆಂಟ್‌ಗಳು ಸಹಾಯ ಮಾಡಲು ಇಲ್ಲಿವೆ! ಬೆಳೆ, ಮಾರುಕಟ್ಟೆ ಬೆಲೆಗಳು, ಮಣ್ಣು, ಹವಾಮಾನ, ಸಾಲ, FPO ಬಗ್ಗೆ ಕೇಳಿ!";
     }
 
     const finalResponse = currentLanguage === 'kannada' ? responseKannada : response;
@@ -158,8 +161,11 @@ export const SmartAIAssistant: React.FC<SmartAIAssistantProps> = ({ currentLangu
         <div className="flex items-center justify-center space-x-2 mb-4">
           <Sprout className="text-green-600" size={32} />
           <h2 className="text-2xl font-bold text-green-800">
-            {currentLanguage === 'kannada' ? 'ಅಗ್ರೋ AI ಸಹಾಯಕ' : 'Agro AI Assistant'}
+            {currentLanguage === 'kannada' ? 'ಕಿಸಾನ್‌ಮಿತ್ರ AI ಸಹಾಯಕ' : currentLanguage === 'hindi' ? 'किसानमित्र AI सहायक' : 'KisaanMitra AI Assistant'}
           </h2>
+          <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
+            {currentLanguage === 'kannada' ? '7 ಏಜೆಂಟ್‌ಗಳು' : currentLanguage === 'hindi' ? '7 एजेंट' : '7 Agents'}
+          </span>
         </div>
         
         {/* Voice Button */}

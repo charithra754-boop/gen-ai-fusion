@@ -175,7 +175,7 @@ export default function FPODashboard() {
           <CardHeader>
             <CardTitle className="text-lg">AI Recommendations</CardTitle>
             <CardDescription>
-              Powered by Collective Market Governance Agent (CMGA)
+              Powered by KisaanMitra CMGA - Collective Market Governance Agent
             </CardDescription>
           </CardHeader>
           <CardContent>

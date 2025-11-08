@@ -21,11 +21,20 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-blue-50">
       {/* Header with Language Selector */}
       <div className="bg-white shadow-sm p-4 flex justify-between items-center">
-        <div className="flex items-center space-x-2">
-          <Wheat className="text-green-600" size={32} />
-          <h1 className="text-2xl font-bold text-green-800">AgroMind</h1>
-          <span className="text-sm text-green-600 bg-green-100 px-2 py-1 rounded-full">
-            {currentLanguage === 'kannada' ? 'AI ಚಾಲಿತ' : 'AI Powered'}
+        <div className="flex items-center space-x-3">
+          <Wheat className="text-green-600" size={36} />
+          <div>
+            <h1 className="text-2xl font-bold text-green-800">KisaanMitra</h1>
+            <p className="text-xs text-gray-600">
+              {currentLanguage === 'kannada'
+                ? 'ಬಹು-ಏಜೆಂಟ್ ಕೃಷಿ ವೇದಿಕೆ'
+                : currentLanguage === 'hindi'
+                ? 'बहु-एजेंट कृषि मंच'
+                : 'Multi-Agent Agricultural Platform'}
+            </p>
+          </div>
+          <span className="text-sm text-green-700 bg-green-100 px-3 py-1 rounded-full font-medium">
+            {currentLanguage === 'kannada' ? '7 AI ಏಜೆಂಟ್‌ಗಳು' : currentLanguage === 'hindi' ? '7 AI एजेंट' : '7 AI Agents'}
           </span>
         </div>
         <LanguageSelector />
@@ -45,12 +54,14 @@ const Index = () => {
               </div>
               <div>
                 <h2 className="text-xl font-bold text-gray-800">
-                  {currentLanguage === 'kannada' ? 'ಮಣ್ಣಿನ ಪರೀಕ್ಷೆ' : 'Soil Analysis'}
+                  {currentLanguage === 'kannada' ? 'ಮಣ್ಣಿನ ಪರೀಕ್ಷೆ ಮತ್ತು ಬೆಳೆ ಶಿಫಾರಸು' : currentLanguage === 'hindi' ? 'मिट्टी परीक्षण और फसल सिफारिश' : 'Soil Analysis & Crop Portfolio'}
                 </h2>
                 <p className="text-gray-600">
-                  {currentLanguage === 'kannada' 
-                    ? 'ನಿಮ್ಮ ಮಣ್ಣಿಗೆ ಸೂಕ್ತವಾದ ಬೆಳೆಯನ್ನು AI ಮೂಲಕ ಪತ್ತೆ ಮಾಡಿ' 
-                    : 'Get AI-powered crop recommendations based on your soil parameters'
+                  {currentLanguage === 'kannada'
+                    ? 'ಸಾಮೂಹಿಕ ಕೃಷಿಗಾಗಿ AI-ಚಾಲಿತ ಬೆಳೆ ಯೋಜನೆ ಪಡೆಯಿರಿ'
+                    : currentLanguage === 'hindi'
+                    ? 'सामूहिक खेती के लिए AI-संचालित फसल योजना प्राप्त करें'
+                    : 'Get AI-powered crop portfolio recommendations for collective farming'
                   }
                 </p>
               </div>
@@ -59,7 +70,7 @@ const Index = () => {
               onClick={() => navigate('/soil-analysis')}
               className="bg-amber-600 hover:bg-amber-700 text-white"
             >
-              {currentLanguage === 'kannada' ? 'ಪರೀಕ್ಷೆ ಮಾಡಿ' : 'Test Now'}
+              {currentLanguage === 'kannada' ? 'ಪರೀಕ್ಷೆ ಮಾಡಿ' : currentLanguage === 'hindi' ? 'अभी परीक्षण करें' : 'Analyze Now'}
             </Button>
           </div>
         </Card>
@@ -76,7 +87,7 @@ const Index = () => {
             <div className="flex items-center space-x-2 mb-4">
               <Lightbulb className="text-yellow-600" size={24} />
               <h2 className="text-xl font-bold text-gray-800">
-                {currentLanguage === 'kannada' ? 'ಇಂದಿನ ಕೃಷಿ ಸಲಹೆಗಳು' : 'Today\'s Farming Tips'}
+                {currentLanguage === 'kannada' ? 'ತಜ್ಞರ ಕೃಷಿ ಸಲಹೆಗಳು' : currentLanguage === 'hindi' ? 'विशेषज्ञ कृषि सुझाव' : 'Expert Farming Tips'}
               </h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
