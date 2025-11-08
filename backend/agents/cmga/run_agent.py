@@ -32,22 +32,22 @@ def check_environment():
     # Check if .env file exists
     env_file = current_dir / '.env'
     if not env_file.exists():
-        logger.warning("⚠️  .env file not found. Creating from template...")
+        logger.warning(".env file not found. Creating from template...")
         
         # Copy .env.example to .env
         env_example = current_dir / '.env.example'
         if env_example.exists():
             import shutil
             shutil.copy(env_example, env_file)
-            logger.info("✅ Created .env file from template")
+            logger.info("Created .env file from template")
         else:
-            logger.error("❌ .env.example not found")
+            logger.error(".env.example not found")
             return False
     
     # Check Google credentials
     creds_file = current_dir / 'config' / 'google-credentials-dev.json'
     if not creds_file.exists():
-        logger.warning("⚠️  Google credentials file not found")
+        logger.warning("Google credentials file not found")
         logger.info("   Using placeholder credentials for demo mode")
     
     return True
@@ -57,7 +57,7 @@ async def run_integration_demo():
     logger = logging.getLogger(__name__)
     
     try:
-        logger.info("🚀 Starting CMGA Agent Integration Demo")
+        logger.info("Starting CMGA Agent Integration Demo")
         
         # Import and run the integration example
         from integration_example import demonstrate_integration
@@ -66,7 +66,7 @@ async def run_integration_demo():
         return True
         
     except Exception as e:
-        logger.error(f"❌ Integration demo failed: {e}")
+        logger.error(f"Integration demo failed: {e}")
         return False
 
 async def run_portfolio_optimizer():
@@ -74,7 +74,7 @@ async def run_portfolio_optimizer():
     logger = logging.getLogger(__name__)
     
     try:
-        logger.info("🎯 Starting Portfolio Optimizer Demo")
+        logger.info("Starting Portfolio Optimizer Demo")
         
         # Import and run the portfolio optimizer
         from portfolio_optimizer_adk import PortfolioOptimizerADK, CropOption, PortfolioConstraints
@@ -141,7 +141,7 @@ async def run_portfolio_optimizer():
         # Create optimizer and run
         optimizer = PortfolioOptimizerADK()
         
-        logger.info("🔄 Running AI-enhanced portfolio optimization...")
+        logger.info("Running AI-enhanced portfolio optimization...")
         result = await optimizer.optimize_collective_portfolio(
             constraints=constraints,
             crop_options=crop_options,
@@ -151,24 +151,24 @@ async def run_portfolio_optimizer():
         )
         
         # Display results
-        logger.info("📊 Optimization Results:")
+        logger.info("Optimization Results:")
         logger.info(f"   Expected Return: {result.expected_return:.2%}")
         logger.info(f"   Portfolio Risk: {result.portfolio_risk:.2%}")
         logger.info(f"   Sharpe Ratio: {result.sharpe_ratio:.2f}")
         logger.info(f"   AI Confidence: {result.processing_metadata.get('overall_confidence', 0):.2f}")
         
-        logger.info("🌾 Crop Allocations:")
+        logger.info("Crop Allocations:")
         for crop in result.crops:
-            logger.info(f"   • {crop.crop_name}: {crop.land_area:.1f} hectares ({crop.expected_return:.2%} return)")
+            logger.info(f"   - {crop.crop_name}: {crop.land_area:.1f} hectares ({crop.expected_return:.2%} return)")
         
-        logger.info("💡 AI Recommendations:")
+        logger.info("AI Recommendations:")
         for rec in result.ai_recommendations:
-            logger.info(f"   • {rec}")
+            logger.info(f"   - {rec}")
         
         return True
         
     except Exception as e:
-        logger.error(f"❌ Portfolio optimizer demo failed: {e}")
+        logger.error(f"Portfolio optimizer demo failed: {e}")
         logger.error("   This might be due to missing Google ADK services")
         logger.info("   Try running the integration demo instead: python run_agent.py --demo")
         return False
@@ -178,7 +178,7 @@ async def run_simple_test():
     logger = logging.getLogger(__name__)
     
     try:
-        logger.info("🧪 Running Simple Functionality Test")
+        logger.info("Running Simple Functionality Test")
         
         # Import test module
         from test_modules_direct import test_basic_functionality
@@ -187,7 +187,7 @@ async def run_simple_test():
         return True
         
     except Exception as e:
-        logger.error(f"❌ Simple test failed: {e}")
+        logger.error(f"Simple test failed: {e}")
         return False
 
 def main():
@@ -204,12 +204,12 @@ def main():
     
     args = parser.parse_args()
     
-    logger.info("🎯 CMGA Portfolio Optimizer Agent")
+    logger.info("CMGA Portfolio Optimizer Agent")
     logger.info("=" * 50)
     
     # Check environment
     if not check_environment():
-        logger.error("❌ Environment check failed")
+        logger.error("Environment check failed")
         sys.exit(1)
     
     # Determine what to run
@@ -221,14 +221,14 @@ def main():
         success = asyncio.run(run_simple_test())
     else:
         # Default: run integration demo
-        logger.info("🚀 Running default integration demonstration")
+        logger.info("Running default integration demonstration")
         logger.info("   Use --help to see other options")
         success = asyncio.run(run_integration_demo())
     
     if success:
-        logger.info("✅ Agent execution completed successfully!")
+        logger.info("Agent execution completed successfully!")
     else:
-        logger.error("❌ Agent execution failed!")
+        logger.error("Agent execution failed!")
         sys.exit(1)
 
 if __name__ == "__main__":

@@ -53,7 +53,7 @@ async def test_basic_functionality():
         cached_result = cache[key]
         logger.info(f"Cached result: {cached_result}")
     
-    logger.info("✓ Basic functionality test passed")
+    logger.info("Basic functionality test passed")
 
 async def main():
     logger.info("Starting basic functionality tests...")
