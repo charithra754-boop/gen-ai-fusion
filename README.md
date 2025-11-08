@@ -40,7 +40,7 @@ cd kisaan-mitra-platform
 
 # Create agent directories
 mkdir -p agents/{gaa,cra,mia,cmga,fia,lia,hia}
-mkdir -p infra/{docker,k8s,terraform}
+mkdir -p infra/{k8s,terraform}
 mkdir -p frontend/{web,mobile}
 mkdir -p docs/{api,architecture,deployment}
 mkdir -p tests/{unit,integration,e2e}
@@ -53,7 +53,7 @@ mkdir -p data/{samples,schemas,migrations}
 
 **Resources Needed**:
 - Git repository (GitHub/GitLab)
-- Code editor (VS Code with extensions: Python, Docker, Kubernetes)
+- Code editor (VS Code with extensions: Python, Kubernetes)
 - Terminal access
 
 **Success Indicators**:
@@ -80,71 +80,17 @@ pip install fastapi uvicorn redis psycopg2-binary pymongo
 # Node.js environment (for frontend)
 npm init -y
 npm install react typescript @types/node
-
-# Docker setup
-# Create docker-compose.yml for local development
-```
-
-**Docker Compose Configuration**:
-```yaml
-# docker-compose.dev.yml
-version: '3.8'
-services:
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-
-  postgres:
-    image: postgres:15
-    environment:
-      POSTGRES_DB: kisaan_mitra
-      POSTGRES_USER: dev_user
-      POSTGRES_PASSWORD: dev_pass
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-  timescaledb:
-    image: timescale/timescaledb:latest-pg15
-    environment:
-      POSTGRES_DB: timeseries_db
-      POSTGRES_USER: ts_user
-      POSTGRES_PASSWORD: ts_pass
-    ports:
-      - "5433:5432"
-    volumes:
-      - timescale_data:/var/lib/postgresql/data
-
-  mongodb:
-    image: mongo:6
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo_data:/data/db
-
-volumes:
-  redis_data:
-  postgres_data:
-  timescale_data:
-  mongo_data:
 ```
 
 **Resources Needed**:
-- Docker Desktop installed
 - Python 3.9+ and Node.js 18+
 - 8GB RAM minimum for local development
 - 20GB free disk space
 
 **Success Indicators**:
-- ✅ All databases running via `docker-compose up`
 - ✅ Python virtual environment activated
-- ✅ Can connect to Redis: `redis-cli ping` returns PONG
-- ✅ Can connect to PostgreSQL: `psql -h localhost -U dev_user -d kisaan_mitra`
-- ✅ TimescaleDB extension enabled: `CREATE EXTENSION IF NOT EXISTS timescaledb;`
+- ✅ Node.js dependencies installed
+- ✅ Frontend development server runs successfully
 
 **What User Can Do After This Subphase**:
 - Start and stop development databases with single command
@@ -280,27 +226,20 @@ jobs:
       run: |
         pytest tests/ --cov=agents/ --cov-report=xml
     
-    - name: Build Docker images
-      run: |
-        docker build -t kisaan-mitra/gaa:latest agents/gaa/
-        docker build -t kisaan-mitra/cra:latest agents/cra/
 ```
 
 **Resources Needed**:
 - GitHub repository with Actions enabled
-- Docker Hub account (for image registry)
 - Basic understanding of YAML and CI/CD concepts
 
 **Success Indicators**:
 - ✅ GitHub Actions workflow runs successfully
 - ✅ Tests pass in CI environment
-- ✅ Docker images build without errors
 - ✅ Code coverage reports generated
 
 **What User Can Do After This Subphase**:
 - Push code changes with confidence (automated testing)
 - Get immediate feedback on code quality
-- Deploy consistent Docker images
 
 #### Subphase 0.5: Monitoring & Logging Setup (Day 4-5)
 
@@ -349,7 +288,7 @@ def setup_logging(agent_name: str):
 ```
 
 **Resources Needed**:
-- Docker Compose with Prometheus and Grafana
+- Prometheus and Grafana installed
 - Understanding of metrics and logging best practices
 
 **Success Indicators**:
@@ -690,9 +629,9 @@ async def health_check():
 - Test different field scenarios
 - Integrate with other agents or frontend
 
-##### Subphase 1.1.5: Testing & Containerization (Day 5-7)
+##### Subphase 1.1.5: Testing (Day 5-7)
 
-**Goal**: Comprehensive testing and Docker containerization
+**Goal**: Comprehensive testing
 
 **Tasks**:
 ```python
@@ -733,48 +672,28 @@ def test_invalid_coordinates():
     response = client.post("/analyze-field", json=request_data)
     assert response.status_code == 422  # Validation error
 
-# Dockerfile for GAA
-FROM python:3.9-slim
-
-WORKDIR /app
-
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-COPY . .
-
-EXPOSE 8001
-
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8001"]
-```
 
 **Resources Needed**:
 - Testing frameworks: `pytest`, `pytest-cov`
-- Docker for containerization
 - Test data samples
 
 **Success Indicators**:
 - ✅ All unit tests pass (>90% code coverage)
 - ✅ Integration tests with Redis work correctly
-- ✅ Docker container builds and runs successfully
 - ✅ Performance tests show acceptable response times
 
 **What User Can See**:
 - Test coverage reports
-- Docker container running status
 - Performance benchmarks
 - CI/CD pipeline results
 
 **What's Built**:
 - Complete test suite for GAA
-- Dockerized GAA service
 - Performance benchmarks
 - CI/CD integration
 
 **What User Can Do After This Subphase**:
-- Run GAA as a containerized service
 - Execute comprehensive test suite
-- Deploy GAA to any Docker-compatible environment
 - Monitor GAA performance metrics
 
 #### 1.2 CRA — Climate & Resource Agent (5 days)
@@ -3254,7 +3173,6 @@ async def health_check():
 
 ### Infrastructure
 
-- **Containerization**: Docker, Docker Compose
 - **Orchestration**: Kubernetes or cloud app services
 - **CI/CD**: GitHub Actions
 - **Monitoring**: Prometheus + Grafana, ELK stack
@@ -3365,7 +3283,7 @@ Farmer Request → HIA → MCP Bus → GAA (satellite analysis) → CRA (irrigat
 4. **Integration**: Implement MCP message flow
 5. **Frontend**: Build role-based dashboards
 6. **Testing**: Unit, integration, and end-to-end tests
-7. **Deployment**: Containerize and deploy to cloud
+7. **Deployment**: Deploy to cloud
 8. **Pilot**: Onboard farmers and measure impact
 
 ## Contributing
