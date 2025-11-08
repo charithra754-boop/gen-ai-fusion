@@ -1,0 +1,81 @@
+version: '3.8'
+
+services:
+  cmga-adk:
+    build:
+      context: ../../../
+      dockerfile: backend/agents/cmga/docker/Dockerfile.adk
+    container_name: cmga-adk
+    environment:
+      - GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT}
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/config/google-credentials.json
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+      - PYTHONPATH=/app
+    volumes:
+      # Mount credentials
+      - ${GOOGLE_APPLICATION_CREDENTIALS}:/app/config/google-credentials.json:ro
+      # Mount configuration
+      - ./config:/app/backend/agents/cmga/config
+      # Mount logs
+      - ./logs:/app/backend/agents/cmga/logs
+      # Mount data (for caching)
+      - ./data:/app/backend/agents/cmga/data
+    networks:
+      - kisaan-mitra-network
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import asyncio; from backend.agents.cmga.services.adk_service_manager import get_adk_service_manager; asyncio.run(get_adk_service_manager().initialize())"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  postgres:
+    image: postgres:15
+    container_name: cmga-postgres
+    environment:
+      - POSTGRES_DB=kisaan_mitra
+      - POSTGRES_USER=cmga_user
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-cmga_secure_password}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - kisaan-mitra-network
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: cmga-redis
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-redis_secure_password}
+    volumes:
+      - redis_data:/data
+    networks:
+      - kisaan-mitra-network
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    container_name: cmga-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    networks:
+      - kisaan-mitra-network
+    depends_on:
+      - cmga-adk
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  kisaan-mitra-network:
+    driver: bridge

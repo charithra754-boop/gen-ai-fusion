@@ -1,0 +1,51 @@
+# Google ADK and Cloud dependencies
+google-adk==1.18.0
+google-cloud-aiplatform==1.126.1
+google-cloud-vision==3.8.1
+google-cloud-language==2.14.0
+google-cloud-automl==2.14.0
+google-cloud-storage==3.5.0
+google-cloud-logging==3.12.1
+google-cloud-monitoring==2.28.0
+google-cloud-trace==1.17.0
+
+# Authentication and security
+google-auth==2.43.0
+google-auth-oauthlib==1.2.1
+google-auth-httplib2==0.2.1
+
+# Core dependencies
+fastapi==0.121.0
+uvicorn==0.38.0
+pydantic==2.12.4
+pydantic-settings==2.11.0
+
+# Async and HTTP
+httpx==0.28.1
+aiohttp==3.11.11
+asyncio-throttle==1.0.2
+
+# Data processing
+numpy>=1.26.0,<2.3
+pandas==2.2.3
+scipy>=1.11.0
+
+# Utilities
+python-dotenv==1.2.1
+python-dateutil==2.9.0.post0
+tenacity==9.1.2
+backoff==2.2.1
+
+# Logging and monitoring
+structlog==25.1.0
+prometheus-client==0.21.1
+
+# Testing (optional)
+pytest==8.3.4
+pytest-asyncio==0.25.0
+pytest-mock==3.14.0
+
+# Development tools (optional)
+black==25.1.0
+flake8==7.1.1
+mypy==1.14.1

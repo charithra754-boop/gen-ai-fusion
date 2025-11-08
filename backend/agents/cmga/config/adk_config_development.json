@@ -1,0 +1,60 @@
+{
+  "project_id": "kisaan-mitra-dev",
+  "credentials_path": "backend/agents/cmga/config/google-credentials-dev.json",
+  "environment": "development",
+  "vertex_ai": {
+    "project_id": "kisaan-mitra-dev",
+    "region": "us-central1",
+    "model_endpoints": {
+      "text-bison": "text-bison@001",
+      "code-bison": "code-bison@001",
+      "chat-bison": "chat-bison@001",
+      "textembedding-gecko": "textembedding-gecko@001"
+    }
+  },
+  "vision_api": {
+    "enabled": true,
+    "features": [
+      "CROP_HINTS",
+      "OBJECT_LOCALIZATION",
+      "IMAGE_PROPERTIES",
+      "SAFE_SEARCH_DETECTION"
+    ],
+    "max_results": 10
+  },
+  "natural_language": {
+    "enabled": true,
+    "features": [
+      "EXTRACT_ENTITIES",
+      "EXTRACT_DOCUMENT_SENTIMENT",
+      "CLASSIFY_TEXT",
+      "EXTRACT_SYNTAX"
+    ],
+    "language": "en"
+  },
+  "automl": {
+    "enabled": true,
+    "model_ids": {
+      "crop_risk_assessment": "TBL_CROP_RISK_DEV",
+      "yield_prediction": "TBL_YIELD_PRED_DEV",
+      "price_forecasting": "TBL_PRICE_FORECAST_DEV",
+      "fraud_detection": "TBL_FRAUD_DETECT_DEV"
+    }
+  },
+  "rate_limits": {
+    "requests_per_minute": 60,
+    "requests_per_day": 1000,
+    "concurrent_requests": 10,
+    "retry_attempts": 3,
+    "backoff_factor": 2.0,
+    "max_backoff_time": 300
+  },
+  "security": {
+    "encryption_enabled": true,
+    "data_residency_region": "us",
+    "audit_logging": true,
+    "differential_privacy": true,
+    "consent_required": true,
+    "data_retention_days": 365
+  }
+}

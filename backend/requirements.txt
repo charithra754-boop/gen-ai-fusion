@@ -1,0 +1,29 @@
+# Google Cloud ADK Dependencies
+google-cloud-aiplatform>=1.38.0
+google-cloud-vision>=3.4.0
+google-cloud-language>=2.9.0
+google-cloud-storage>=2.10.0
+
+# Authentication and Core
+google-auth>=2.23.0
+google-auth-oauthlib>=1.1.0
+google-auth-httplib2>=0.1.1
+
+# Additional dependencies for CMGA
+asyncio-mqtt>=0.13.0
+pydantic>=2.4.0
+python-dotenv>=1.0.0
+structlog>=23.1.0
+
+# Database and caching
+psycopg2-binary>=2.9.7
+asyncpg>=0.29.0
+redis>=5.0.0
+
+# API and web framework
+fastapi>=0.104.0
+uvicorn>=0.24.0
+
+# Testing
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
