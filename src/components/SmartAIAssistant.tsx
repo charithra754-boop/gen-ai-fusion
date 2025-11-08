@@ -1,0 +1,261 @@
+import React, { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { useLanguage } from '../hooks/useLanguage';
+import { useCropRecommendations, useWeatherData, useFarmingTips, useAIConversations, useSoilAnalysis } from '../hooks/useAgriculturalData';
+import { Mic, MicOff, Volume2, Lightbulb, Sprout, TestTube } from 'lucide-react';
+import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
+
+interface SmartAIAssistantProps {
+  currentLanguage: string;
+}
+
+export const SmartAIAssistant: React.FC<SmartAIAssistantProps> = ({ currentLanguage }) => {
+  const { translations } = useLanguage();
+  const navigate = useNavigate();
+  const [isListening, setIsListening] = useState(false);
+  const [transcript, setTranscript] = useState('');
+  const [aiResponse, setAiResponse] = useState('');
+  const [recognition, setRecognition] = useState<any>(null);
+  const [currentLocation, setCurrentLocation] = useState('Karnataka');
+
+  const { data: cropRecommendations } = useCropRecommendations(currentLocation, 'kharif');
+  const { data: weatherData } = useWeatherData('Bangalore');
+  const { data: farmingTips } = useFarmingTips();
+  const { saveConversation } = useAIConversations();
+  const { getSoilAnalysisHistory } = useSoilAnalysis();
+
+  useEffect(() => {
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
+      const recognitionInstance = new SpeechRecognition();
+      
+      recognitionInstance.continuous = false;
+      recognitionInstance.interimResults = true;
+      recognitionInstance.lang = currentLanguage === 'kannada' ? 'kn-IN' : 'en-IN';
+
+      recognitionInstance.onresult = (event: any) => {
+        const lastResult = event.results[event.results.length - 1];
+        const transcript = lastResult[0].transcript;
+        setTranscript(transcript);
+        
+        if (lastResult.isFinal) {
+          processVoiceQuery(transcript);
+          setIsListening(false);
+        }
+      };
+
+      recognitionInstance.onerror = (event: any) => {
+        console.error('Speech recognition error:', event.error);
+        setIsListening(false);
+        toast.error('Voice recognition failed. Please try again.');
+      };
+
+      recognitionInstance.onend = () => {
+        setIsListening(false);
+      };
+
+      setRecognition(recognitionInstance);
+    }
+  }, [currentLanguage]);
+
+  const processVoiceQuery = async (query: string) => {
+    console.log('Processing voice query:', query);
+    
+    // Enhanced AI logic with soil analysis integration
+    let response = '';
+    let responseKannada = '';
+
+    const queryLower = query.toLowerCase();
+    
+    if (queryLower.includes('soil') || queryLower.includes('ಮಣ್ಣು') || queryLower.includes('test') || queryLower.includes('ಪರೀಕ್ಷೆ')) {
+      response = `I can help you analyze your soil and recommend the best crops! You can use our AI-powered soil analysis feature. Just provide your soil's NPK values, pH, temperature, humidity, and rainfall data.`;
+      responseKannada = `ನಿಮ್ಮ ಮಣ್ಣಿನ ಪರೀಕ್ಷೆ ಮಾಡಿ ಉತ್ತಮ ಬೆಳೆಗಳನ್ನು ಶಿಫಾರಸು ಮಾಡಲು ನಾನು ಸಹಾಯ ಮಾಡಬಲ್ಲೆ! NPK ಮೌಲ್ಯಗಳು, pH, ತಾಪಮಾನ, ಆರ್ದ್ರತೆ ಮತ್ತು ಮಳೆಯ ಮಾಹಿತಿ ಕೊಡಿ.`;
+    } else if (queryLower.includes('crop') || queryLower.includes('ಬೆಳೆ') || queryLower.includes('plant')) {
+      const bestCrop = cropRecommendations?.[0];
+      if (bestCrop) {
+        response = `I recommend growing ${bestCrop.crop_name} this season. It has a profitability score of ${bestCrop.profitability_score}% and takes ${bestCrop.growing_duration} days to grow. For personalized recommendations, try our soil analysis feature!`;
+        responseKannada = `ಈ ಕಾಲದಲ್ಲಿ ${bestCrop.crop_name === 'Rice' ? 'ಅಕ್ಕಿ' : bestCrop.crop_name === 'Wheat' ? 'ಗೋಧಿ' : bestCrop.crop_name} ಬೆಳೆಸಲು ಸಲಹೆ ನೀಡುತ್ತೇನೆ. ವೈಯಕ್ತಿಕ ಶಿಫಾರಸುಗಳಿಗಾಗಿ ಮಣ್ಣಿನ ಪರೀಕ್ಷೆ ಮಾಡಿ!`;
+      }
+    } else if (queryLower.includes('weather') || queryLower.includes('ಹವಾಮಾನ') || queryLower.includes('rain')) {
+      const todayWeather = weatherData?.[0];
+      if (todayWeather) {
+        response = `Today's weather: ${todayWeather.temperature}°C, ${todayWeather.humidity}% humidity, ${todayWeather.rainfall}mm rainfall. Condition: ${todayWeather.weather_condition}.`;
+        responseKannada = `ಇಂದಿನ ಹವಾಮಾನ: ${todayWeather.temperature}°C ತಾಪಮಾನ, ${todayWeather.humidity}% ಆರ್ದ್ರತೆ, ${todayWeather.rainfall}mm ಮಳೆ.`;
+      }
+    } else if (queryLower.includes('tip') || queryLower.includes('advice') || queryLower.includes('ಸಲಹೆ')) {
+      const randomTip = farmingTips?.[Math.floor(Math.random() * (farmingTips?.length || 1))];
+      if (randomTip) {
+        response = `Here's a farming tip: ${randomTip.tip_title}. ${randomTip.tip_content}`;
+        responseKannada = `ಕೃಷಿ ಸಲಹೆ: ${randomTip.tip_title_kannada}. ${randomTip.tip_content_kannada}`;
+      }
+    } else {
+      response = "I understand you're asking about farming. I can help with crops, weather, farming tips, or soil analysis. Try asking 'test my soil' for personalized recommendations!";
+      responseKannada = "ನೀವು ಕೃಷಿಯ ಬಗ್ಗೆ ಕೇಳುತ್ತಿದ್ದೀರಿ. ಬೆಳೆಗಳು, ಹವಾಮಾನ, ಕೃಷಿ ಸಲಹೆಗಳು ಅಥವಾ ಮಣ್ಣಿನ ಪರೀಕ್ಷೆಯ ಬಗ್ಗೆ ಕೇಳಿ!";
+    }
+
+    const finalResponse = currentLanguage === 'kannada' ? responseKannada : response;
+    setAiResponse(finalResponse);
+
+    // Save conversation to database
+    try {
+      await saveConversation.mutateAsync({
+        user_query: query,
+        user_query_kannada: currentLanguage === 'kannada' ? query : undefined,
+        ai_response: response,
+        ai_response_kannada: responseKannada,
+        language: currentLanguage,
+        location: currentLocation
+      });
+    } catch (error) {
+      console.error('Failed to save conversation:', error);
+    }
+
+    // Text-to-speech for AI response
+    if ('speechSynthesis' in window) {
+      const utterance = new SpeechSynthesisUtterance(finalResponse);
+      utterance.lang = currentLanguage === 'kannada' ? 'kn-IN' : 'en-IN';
+      speechSynthesis.speak(utterance);
+    }
+  };
+
+  const startListening = () => {
+    if (recognition) {
+      setTranscript('');
+      setAiResponse('');
+      setIsListening(true);
+      recognition.start();
+    } else {
+      // Fallback for demo
+      const mockQueries = {
+        kannada: 'ಈ ವಾರ ಯಾವ ಬೆಳೆ ಬೆಳೆಸೋದು ಲಾಭಕಾರಿಯಿರುತ್ತೆ?',
+        english: 'Which crop should I plant this week?'
+      };
+      const mockQuery = mockQueries[currentLanguage as keyof typeof mockQueries] || mockQueries.english;
+      processVoiceQuery(mockQuery);
+    }
+  };
+
+  const stopListening = () => {
+    if (recognition) {
+      recognition.stop();
+    }
+    setIsListening(false);
+  };
+
+  const speakResponse = () => {
+    if ('speechSynthesis' in window && aiResponse) {
+      const utterance = new SpeechSynthesisUtterance(aiResponse);
+      utterance.lang = currentLanguage === 'kannada' ? 'kn-IN' : 'en-IN';
+      speechSynthesis.speak(utterance);
+    }
+  };
+
+  return (
+    <Card className="p-6 bg-gradient-to-br from-green-50 to-blue-50 border-green-200">
+      <div className="text-center space-y-6">
+        <div className="flex items-center justify-center space-x-2 mb-4">
+          <Sprout className="text-green-600" size={32} />
+          <h2 className="text-2xl font-bold text-green-800">
+            {currentLanguage === 'kannada' ? 'ಅಗ್ರೋ AI ಸಹಾಯಕ' : 'Agro AI Assistant'}
+          </h2>
+        </div>
+        
+        {/* Voice Button */}
+        <div className="relative">
+          <Button
+            onClick={isListening ? stopListening : startListening}
+            size="lg"
+            className={`
+              w-24 h-24 rounded-full text-white font-semibold text-lg shadow-lg transition-all duration-300 transform
+              ${isListening 
+                ? 'bg-red-500 hover:bg-red-600 scale-110 animate-pulse' 
+                : 'bg-green-500 hover:bg-green-600 hover:scale-105'
+              }
+            `}
+          >
+            {isListening ? <MicOff size={32} /> : <Mic size={32} />}
+          </Button>
+          
+          {isListening && (
+            <div className="absolute inset-0 rounded-full border-4 border-red-300 animate-ping"></div>
+          )}
+        </div>
+
+        <p className="text-green-700 font-medium">
+          {isListening 
+            ? (currentLanguage === 'kannada' ? 'ಕೇಳುತ್ತಿದೆ... ಮಾತನಾಡಿ' : 'Listening... Speak now')
+            : (currentLanguage === 'kannada' ? 'ಮೈಕ್ರೋಫೋನ್ ಒತ್ತಿ ಮಾತನಾಡಿ' : 'Tap microphone to speak')
+          }
+        </p>
+
+        {/* Transcript Display */}
+        {transcript && (
+          <Card className="p-4 bg-blue-50 border-blue-200">
+            <div className="flex items-center space-x-2 mb-2">
+              <span className="text-blue-600 font-semibold">
+                {currentLanguage === 'kannada' ? 'ನೀವು ಹೇಳಿದ್ದು:' : 'You said:'}
+              </span>
+            </div>
+            <p className="text-blue-800">{transcript}</p>
+          </Card>
+        )}
+
+        {/* AI Response */}
+        {aiResponse && (
+          <Card className="p-4 bg-green-50 border-green-200">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-green-600 font-semibold flex items-center space-x-2">
+                <Lightbulb size={20} />
+                <span>{currentLanguage === 'kannada' ? 'AI ಉತ್ತರ:' : 'AI Response:'}</span>
+              </span>
+              <Button
+                onClick={speakResponse}
+                size="sm"
+                variant="outline"
+                className="text-green-600 border-green-300"
+              >
+                <Volume2 size={16} />
+              </Button>
+            </div>
+            <p className="text-green-800">{aiResponse}</p>
+          </Card>
+        )}
+
+        {/* Quick Action Buttons */}
+        <div className="grid grid-cols-2 gap-3">
+          <Button 
+            onClick={() => processVoiceQuery(currentLanguage === 'kannada' ? 'ಯಾವ ಬೆಳೆ ಬೆಳೆಸೋದು?' : 'What crop to grow?')}
+            variant="outline" 
+            className="text-green-600 border-green-300 hover:bg-green-50"
+          >
+            🌱 {currentLanguage === 'kannada' ? 'ಬೆಳೆ ಸಲಹೆ' : 'Crop Advice'}
+          </Button>
+          <Button 
+            onClick={() => processVoiceQuery(currentLanguage === 'kannada' ? 'ಹವಾಮಾನ ಹೇಗಿದೆ?' : 'How is the weather?')}
+            variant="outline" 
+            className="text-blue-600 border-blue-300 hover:bg-blue-50"
+          >
+            🌤️ {currentLanguage === 'kannada' ? 'ಹವಾಮಾನ' : 'Weather'}
+          </Button>
+          <Button 
+            onClick={() => navigate('/soil-analysis')}
+            variant="outline" 
+            className="text-amber-600 border-amber-300 hover:bg-amber-50"
+          >
+            <TestTube size={16} className="mr-1" />
+            {currentLanguage === 'kannada' ? 'ಮಣ್ಣಿನ ಪರೀಕ್ಷೆ' : 'Soil Test'}
+          </Button>
+          <Button 
+            onClick={() => processVoiceQuery(currentLanguage === 'kannada' ? 'ಮಳೆ ಬರುತ್ತೆಯಾ?' : 'Will it rain?')}
+            variant="outline" 
+            className="text-purple-600 border-purple-300 hover:bg-purple-50"
+          >
+            🌧️ {currentLanguage === 'kannada' ? 'ಮಳೆ ಮುನ್ಸೂಚನೆ' : 'Rain Forecast'}
+          </Button>
+        </div>
+      </div>
+    </Card>
+  );
+};
