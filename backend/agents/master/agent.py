@@ -6,7 +6,7 @@
 import json
 from typing import List, Dict, Any
 from google.adk.agents import LlmAgent
-from google.adk.tools import FunctionTool, GoogleSearchTool 
+from google.adk.tools import FunctionTool
 from google.genai import types
 from datetime import date 
 import random 
@@ -239,18 +239,26 @@ def create_master_agent() -> LlmAgent:
     
     # 1. Collect all tools
     all_tools = [
-        # FIA Tools 
-        FunctionTool(credit_advisory_tool), FunctionTool(insurance_info_tool), FunctionTool(fraud_prevention_tool),
-        # CRA Tools 
-        FunctionTool(schedule_irrigation), FunctionTool(calculate_climate_resilience_rating), FunctionTool(generate_water_budget),
-        # GAA Tools 
-        FunctionTool(analyze_ndvi_data), FunctionTool(detect_crop_stress), FunctionTool(forecast_yield),
-        # UNIFIED Tools 
-        FunctionTool(market_forecast_tool), FunctionTool(route_optimization_tool), FunctionTool(cold_chain_tool),
-        FunctionTool(portfolio_optimizer_tool), FunctionTool(profit_distribution_tool), FunctionTool(translation_tool),
-        # CRITICAL: Include the GoogleSearchTool for dynamic grounding on Insurance
-        FunctionTool(GoogleSearchTool)
-    ]
+    # FIA Tools 
+    FunctionTool(credit_advisory_tool), 
+    FunctionTool(insurance_info_tool), 
+    FunctionTool(fraud_prevention_tool),
+    # CRA Tools 
+    FunctionTool(schedule_irrigation), 
+    FunctionTool(calculate_climate_resilience_rating), 
+    FunctionTool(generate_water_budget),
+    # GAA Tools 
+    FunctionTool(analyze_ndvi_data), 
+    FunctionTool(detect_crop_stress), 
+    FunctionTool(forecast_yield),
+    # UNIFIED Tools 
+    FunctionTool(market_forecast_tool), 
+    FunctionTool(route_optimization_tool), 
+    FunctionTool(cold_chain_tool),
+    FunctionTool(portfolio_optimizer_tool), 
+    FunctionTool(profit_distribution_tool), 
+    FunctionTool(translation_tool)
+]
 
     # 2. Define the Orchestrator (The Brain)
     master_agent = LlmAgent(

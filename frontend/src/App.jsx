@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -712,5 +713,189 @@ const App = () => {
     </div>
   );
 };
+=======
+import React, { useState, useRef, useEffect } from 'react';
+import './App.css';
+
+function App() {
+  const [chatHistory, setChatHistory] = useState([
+    {
+      sender: 'agent',
+      text: '🌾 Namaste! I am KisaanMitra, your AI farming assistant. Ask me about loans, insurance, crop health, irrigation, or market prices!',
+      timestamp: Date.now()
+    }
+  ]);
+  const [inputText, setInputText] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const chatEndRef = useRef(null);
+
+  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatHistory]);
+
+  const handleSendMessage = async () => {
+    if (!inputText.trim()) return;
+
+    const userQuery = inputText.trim();
+    setInputText(''); // Clear input immediately
+    
+    const API_URL = 'http://127.0.0.1:8000/v1/agent/master/';
+    
+    // Add user message to chat immediately
+    setChatHistory(prev => [...prev, { 
+      sender: 'user', 
+      text: userQuery, 
+      timestamp: Date.now() 
+    }]);
+
+    setIsLoading(true);
+    
+    try {
+      // Prepare the request (Input Contract)
+      const payload = JSON.stringify({
+        contents: [{
+          parts: [{
+            text: userQuery
+          }]
+        }]
+      });
+      
+      // Call the API
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: payload
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server responded with status ${response.status}`);
+      }
+      
+      // Parse response (Output Contract)
+      const result = await response.json();
+      const agentText = result.candidates[0].content.parts[0].text;
+      
+      // Add agent response to chat
+      setChatHistory(prev => [...prev, { 
+        sender: 'agent', 
+        text: agentText, 
+        timestamp: Date.now() 
+      }]);
+      
+    } catch (error) {
+      console.error('KisaanMitra API Error:', error);
+      setChatHistory(prev => [...prev, { 
+        sender: 'agent', 
+        text: '❌ Connection error. Please check if the server is running on http://127.0.0.1:8000', 
+        timestamp: Date.now() 
+      }]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+
+  const quickQuestions = [
+    "What is the KCC interest rate?",
+    "Tell me about PM-KISAN scheme",
+    "I received an SMS asking for my OTP",
+    "Schedule irrigation for my plot"
+  ];
+
+  const handleQuickQuestion = (question) => {
+    setInputText(question);
+  };
+
+  return (
+    <div className="App">
+      <header className="app-header">
+        <h1>🌾 KisaanMitra</h1>
+        <p>Your AI-Powered Farming Assistant</p>
+      </header>
+
+      <div className="chat-container">
+        <div className="chat-messages">
+          {chatHistory.map((msg, index) => (
+            <div 
+              key={index} 
+              className={`message ${msg.sender === 'user' ? 'user-message' : 'agent-message'}`}
+            >
+              <div className="message-bubble">
+                <div className="message-text">{msg.text}</div>
+                <div className="message-time">
+                  {new Date(msg.timestamp).toLocaleTimeString()}
+                </div>
+              </div>
+            </div>
+          ))}
+          
+          {isLoading && (
+            <div className="message agent-message">
+              <div className="message-bubble">
+                <div className="typing-indicator">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          <div ref={chatEndRef} />
+        </div>
+
+        {chatHistory.length <= 1 && (
+          <div className="quick-questions">
+            <p>Quick questions to try:</p>
+            <div className="quick-buttons">
+              {quickQuestions.map((q, i) => (
+                <button 
+                  key={i}
+                  onClick={() => handleQuickQuestion(q)}
+                  className="quick-button"
+                >
+                  {q}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="chat-input-container">
+          <textarea
+            value={inputText}
+            onChange={(e) => setInputText(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder="Ask about loans, schemes, crop health, irrigation..."
+            className="chat-input"
+            rows="2"
+            disabled={isLoading}
+          />
+          <button 
+            onClick={handleSendMessage}
+            className="send-button"
+            disabled={isLoading || !inputText.trim()}
+          >
+            {isLoading ? '⏳' : '📤 Send'}
+          </button>
+        </div>
+      </div>
+
+      <footer className="app-footer">
+        <p>Powered by Gemini AI • Made for Indian Farmers</p>
+      </footer>
+    </div>
+  );
+}
+09d0cb0b (Fixes)
 
 export default App;
