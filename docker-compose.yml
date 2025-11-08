@@ -1,0 +1,137 @@
+version: '3.8'
+
+services:
+  # Redis - For MCP context caching
+  redis:
+    image: redis:7-alpine
+    container_name: kisaanmitra-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - kisaanmitra-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  # PostgreSQL with PostGIS - Main database
+  postgres:
+    image: postgis/postgis:15-3.3
+    container_name: kisaanmitra-postgres
+    environment:
+      POSTGRES_DB: kisaanmitra
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./backend/schema:/docker-entrypoint-initdb.d
+    networks:
+      - kisaanmitra-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # TimescaleDB - For IoT sensor time-series data
+  timescaledb:
+    image: timescale/timescaledb:latest-pg15
+    container_name: kisaanmitra-timescale
+    environment:
+      POSTGRES_DB: iot_data
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - timescale-data:/var/lib/postgresql/data
+    networks:
+      - kisaanmitra-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # RabbitMQ - Message queue for agent communication
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: kisaanmitra-rabbitmq
+    ports:
+      - "5672:5672"   # AMQP port
+      - "15672:15672" # Management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - kisaanmitra-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # MCP Message Bus
+  mcp-bus:
+    build:
+      context: ./backend/mcp-bus
+      dockerfile: ../../infrastructure/docker/Dockerfile.mcp-bus
+    container_name: kisaanmitra-mcp-bus
+    depends_on:
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      REDIS_URL: redis://redis:6379
+      RABBITMQ_URL: amqp://admin:admin@rabbitmq:5672
+      MCP_PORT: 3001
+    ports:
+      - "3001:3001"
+    networks:
+      - kisaanmitra-network
+    volumes:
+      - ./backend/mcp-bus/src:/app/src
+    restart: unless-stopped
+
+  # Frontend (React + Vite)
+  frontend:
+    build:
+      context: .
+      dockerfile: ./infrastructure/docker/Dockerfile.frontend
+    container_name: kisaanmitra-frontend
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./src:/app/src
+      - ./public:/app/public
+    environment:
+      VITE_API_GATEWAY_URL: http://localhost:3000
+      VITE_MCP_BUS_URL: http://localhost:3001
+      VITE_SUPABASE_URL: ${VITE_SUPABASE_URL}
+      VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY}
+    networks:
+      - kisaanmitra-network
+    command: npm run dev
+
+volumes:
+  redis-data:
+    driver: local
+  postgres-data:
+    driver: local
+  timescale-data:
+    driver: local
+  rabbitmq-data:
+    driver: local
+
+networks:
+  kisaanmitra-network:
+    driver: bridge
