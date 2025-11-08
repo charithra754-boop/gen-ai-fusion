@@ -1,0 +1,237 @@
+name: "logistics-infrastructure-agent"
+display_name: "Logistics Infrastructure Agent (LIA)"
+description: "Optimizes post-harvest logistics, reduces losses, and provides end-to-end supply chain visibility for agricultural produce"
+version: "1.0.0"
+
+# Agent capabilities and tools
+capabilities:
+  - cold_storage_management
+  - route_optimization
+  - loss_tracking
+  - supply_chain_monitoring
+  - cost_optimization
+  - multilingual_support
+
+# Supported languages
+languages:
+  - en  # English
+  - hi  # Hindi
+  - kn  # Kannada
+
+# Tool definitions
+tools:
+  - name: cold_storage_finder
+    description: "Find and recommend cold storage facilities based on requirements"
+    parameters:
+      produce_type:
+        type: string
+        description: "Type of produce to store (tomato, onion, potato, etc.)"
+        required: true
+      location:
+        type: string
+        description: "Location or region to search for facilities"
+        required: true
+      capacity_needed:
+        type: number
+        description: "Required storage capacity in metric tons"
+        required: true
+      duration:
+        type: integer
+        description: "Storage duration in days"
+        default: 30
+        required: false
+      language:
+        type: string
+        description: "Response language (en, hi, kn)"
+        default: "en"
+        required: false
+
+  - name: route_optimizer
+    description: "Optimize transportation routes for produce delivery"
+    parameters:
+      origin:
+        type: string
+        description: "Starting location for transportation"
+        required: true
+      destinations:
+        type: array
+        items:
+          type: string
+        description: "List of delivery destinations"
+        required: true
+      produce_type:
+        type: string
+        description: "Type of produce being transported"
+        required: true
+      vehicle_type:
+        type: string
+        description: "Type of vehicle (truck, tempo, etc.)"
+        default: "truck"
+        required: false
+      language:
+        type: string
+        description: "Response language (en, hi, kn)"
+        default: "en"
+        required: false
+
+  - name: loss_tracker
+    description: "Track and analyze post-harvest losses with prevention recommendations"
+    parameters:
+      produce_type:
+        type: string
+        description: "Type of produce that experienced loss"
+        required: true
+      loss_stage:
+        type: string
+        description: "Stage where loss occurred (harvest, storage, transport, market)"
+        required: true
+      quantity_lost:
+        type: number
+        description: "Quantity lost in kg or quintals"
+        required: true
+      loss_cause:
+        type: string
+        description: "Cause of loss (spoilage, damage, theft, etc.)"
+        required: true
+      language:
+        type: string
+        description: "Response language (en, hi, kn)"
+        default: "en"
+        required: false
+
+  - name: supply_chain_monitor
+    description: "Monitor supply chain conditions and provide alerts"
+    parameters:
+      batch_id:
+        type: string
+        description: "Unique identifier for produce batch"
+        required: true
+      current_stage:
+        type: string
+        description: "Current stage in supply chain (storage, transport, market)"
+        required: true
+      check_conditions:
+        type: boolean
+        description: "Whether to check environmental conditions"
+        default: true
+        required: false
+      language:
+        type: string
+        description: "Response language (en, hi, kn)"
+        default: "en"
+        required: false
+
+  - name: cost_calculator
+    description: "Calculate and optimize logistics costs"
+    parameters:
+      produce_type:
+        type: string
+        description: "Type of produce"
+        required: true
+      quantity:
+        type: number
+        description: "Quantity in metric tons"
+        required: true
+      origin:
+        type: string
+        description: "Origin location"
+        required: true
+      destination:
+        type: string
+        description: "Destination location"
+        required: true
+      include_storage:
+        type: boolean
+        description: "Include storage costs in calculation"
+        default: false
+        required: false
+      language:
+        type: string
+        description: "Response language (en, hi, kn)"
+        default: "en"
+        required: false
+
+  - name: logistics_planner
+    description: "Create comprehensive logistics plans and schedules"
+    parameters:
+      fpo_id:
+        type: string
+        description: "FPO identifier for collective planning"
+        required: true
+      produce_types:
+        type: array
+        items:
+          type: string
+        description: "Types of produce to plan logistics for"
+        required: true
+      season:
+        type: string
+        description: "Agricultural season (kharif, rabi, zaid)"
+        required: true
+      planning_horizon:
+        type: integer
+        description: "Planning horizon in days"
+        default: 90
+        required: false
+      language:
+        type: string
+        description: "Response language (en, hi, kn)"
+        default: "en"
+        required: false
+
+# Conversation settings
+conversation:
+  max_turns: 10
+  context_retention: true
+  fallback_responses:
+    - "I can help you with cold storage, transportation, loss tracking, and supply chain monitoring. What logistics challenge can I assist you with?"
+    - "मैं कोल्ड स्टोरेज, परिवहन, नुकसान ट्रैकिंग और आपूर्ति श्रृंखला निगरानी में आपकी मदद कर सकता हूं। मैं आपकी किस लॉजिस्टिक्स चुनौती में सहायता कर सकता हूं?"
+    - "ನಾನು ಕೋಲ್ಡ್ ಸ್ಟೋರೇಜ್, ಸಾರಿಗೆ, ನಷ್ಟ ಟ್ರ್ಯಾಕಿಂಗ್ ಮತ್ತು ಪೂರೈಕೆ ಸರಪಳಿ ಮೇಲ್ವಿಚಾರಣೆಯಲ್ಲಿ ನಿಮಗೆ ಸಹಾಯ ಮಾಡಬಹುದು. ನಾನು ನಿಮ್ಮ ಯಾವ ಲಾಜಿಸ್ಟಿಕ್ಸ್ ಸವಾಲಿನಲ್ಲಿ ಸಹಾಯ ಮಾಡಬಹುದು?"
+
+# Intent patterns for natural language understanding
+intents:
+  storage_inquiry:
+    patterns:
+      - "find cold storage for {produce}"
+      - "where can I store {produce}"
+      - "cold storage near {location}"
+      - "{produce} के लिए कोल्ड स्टोरेज कहां मिलेगा"
+      - "{produce} ಗಾಗಿ ಕೋಲ್ಡ್ ಸ್ಟೋರೇಜ್ ಎಲ್ಲಿ ಸಿಗುತ್ತದೆ"
+    
+  route_planning:
+    patterns:
+      - "best route from {origin} to {destination}"
+      - "transport {produce} from {origin}"
+      - "delivery route optimization"
+      - "{origin} से {destination} तक का बेस्ट रूट"
+      - "{origin} ರಿಂದ {destination} ಗೆ ಉತ್ತಮ ಮಾರ್ಗ"
+    
+  loss_reporting:
+    patterns:
+      - "report loss of {produce}"
+      - "{produce} got spoiled"
+      - "track produce loss"
+      - "{produce} खराब हो गया"
+      - "{produce} ಹಾಳಾಗಿದೆ"
+    
+  supply_chain_tracking:
+    patterns:
+      - "track my shipment"
+      - "where is batch {batch_id}"
+      - "supply chain status"
+      - "मेरा शिपमेंट कहां है"
+      - "ನನ್ನ ಸಾಗಣೆ ಎಲ್ಲಿದೆ"
+    
+  cost_inquiry:
+    patterns:
+      - "logistics cost for {produce}"
+      - "transportation cost from {origin}"
+      - "storage cost calculation"
+      - "{produce} की लॉजिस्टिक्स कॉस्ट"
+      - "{produce} ಲಾಜಿಸ್ಟಿಕ್ಸ್ ವೆಚ್ಚ"
+
+# Error handling
+error_handling:
+  max_retries: 3
+  timeout_seconds: 30
+  fallback_to_mock_data: true

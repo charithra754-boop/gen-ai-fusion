@@ -1,0 +1,161 @@
+name: "market-intelligence-agent"
+display_name: "Market Intelligence Agent (MIA)"
+description: "Provides real-time market data, price forecasting, and agricultural market intelligence for farmers and FPOs"
+version: "1.0.0"
+
+# Agent capabilities and tools
+capabilities:
+  - market_data_analysis
+  - price_forecasting
+  - crop_recommendations
+  - trend_analysis
+  - multilingual_support
+
+# Supported languages
+languages:
+  - en  # English
+  - hi  # Hindi
+  - kn  # Kannada
+
+# Tool definitions
+tools:
+  - name: get_current_prices
+    description: "Get current mandi prices for specified crops and regions"
+    parameters:
+      crops:
+        type: array
+        items:
+          type: string
+        description: "List of crop names to get prices for"
+        required: true
+      region:
+        type: string
+        description: "Region or state to get prices for (optional)"
+        required: false
+      language:
+        type: string
+        description: "Response language (en, hi, kn)"
+        default: "en"
+        required: false
+
+  - name: price_forecast
+    description: "Generate price forecasts for crops over specified time period"
+    parameters:
+      crops:
+        type: array
+        items:
+          type: string
+        description: "List of crop names to forecast"
+        required: true
+      days:
+        type: integer
+        description: "Number of days to forecast (default: 30)"
+        default: 30
+        required: false
+      region:
+        type: string
+        description: "Region for forecast (optional)"
+        required: false
+      language:
+        type: string
+        description: "Response language (en, hi, kn)"
+        default: "en"
+        required: false
+
+  - name: market_trends_analyzer
+    description: "Analyze market trends and provide insights"
+    parameters:
+      crops:
+        type: array
+        items:
+          type: string
+        description: "Crops to analyze trends for"
+        required: true
+      time_period:
+        type: string
+        description: "Time period for analysis (1month, 3months, 6months, 1year)"
+        default: "3months"
+        required: false
+      region:
+        type: string
+        description: "Region for analysis (optional)"
+        required: false
+      language:
+        type: string
+        description: "Response language (en, hi, kn)"
+        default: "en"
+        required: false
+
+  - name: crop_recommendation
+    description: "Recommend crops based on market conditions and profitability"
+    parameters:
+      region:
+        type: string
+        description: "Region or state for recommendations"
+        required: true
+      season:
+        type: string
+        description: "Growing season (kharif, rabi, zaid)"
+        required: true
+      land_size:
+        type: number
+        description: "Available land in hectares"
+        required: false
+      budget:
+        type: number
+        description: "Available budget in INR"
+        required: false
+      language:
+        type: string
+        description: "Response language (en, hi, kn)"
+        default: "en"
+        required: false
+
+# Conversation settings
+conversation:
+  max_turns: 10
+  context_retention: true
+  fallback_responses:
+    - "I can help you with market prices, forecasts, trends, and crop recommendations. What would you like to know?"
+    - "मैं बाजार की कीमतों, पूर्वानुमान, रुझान और फसल की सिफारिशों में आपकी मदद कर सकता हूं। आप क्या जानना चाहते हैं?"
+    - "ನಾನು ಮಾರುಕಟ್ಟೆ ಬೆಲೆಗಳು, ಮುನ್ನೋಟಗಳು, ಪ್ರವೃತ್ತಿಗಳು ಮತ್ತು ಬೆಳೆ ಶಿಫಾರಸುಗಳಲ್ಲಿ ನಿಮಗೆ ಸಹಾಯ ಮಾಡಬಹುದು. ನೀವು ಏನು ತಿಳಿಯಲು ಬಯಸುತ್ತೀರಿ?"
+
+# Intent patterns for natural language understanding
+intents:
+  price_inquiry:
+    patterns:
+      - "what is the price of {crop}"
+      - "current price of {crop}"
+      - "{crop} price today"
+      - "मंडी में {crop} का भाव क्या है"
+      - "{crop} ಬೆಲೆ ಎಷ್ಟು"
+    
+  forecast_request:
+    patterns:
+      - "price forecast for {crop}"
+      - "will {crop} price increase"
+      - "{crop} price prediction"
+      - "{crop} का भाव कैसा रहेगा"
+      - "{crop} ಬೆಲೆ ಹೇಗಿರುತ್ತದೆ"
+    
+  trend_analysis:
+    patterns:
+      - "market trends for {crop}"
+      - "how is {crop} market"
+      - "{crop} market analysis"
+      - "{crop} का बाजार कैसा है"
+      - "{crop} ಮಾರುಕಟ್ಟೆ ಹೇಗಿದೆ"
+    
+  crop_advice:
+    patterns:
+      - "which crop to grow"
+      - "best crop for {season}"
+      - "profitable crops"
+      - "कौन सी फसल लगाएं"
+      - "ಯಾವ ಬೆಳೆ ಬೆಳೆಯಬೇಕು"
+
+# Error handling
+error_handling:
+  max_retries: 3
+  timeout_seconds: 30
+  fallback_to_mock_data: true
